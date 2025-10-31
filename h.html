@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cash Register</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    main {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .price-display {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #27ae60;
+      margin: 1rem 0;
+      padding: 0.75rem;
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+    }
+
+    .input-group {
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 2px solid #e1e8ed;
+      border-radius: 0.5rem;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3498db;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    button:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #change-due {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      min-height: 24px;
+    }
+
+    .status-open {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status-closed {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .status-insufficient {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .drawer {
+      margin-top: 2rem;
+      text-align: left;
+    }
+
+    .drawer h3 {
+      color: #2c3e50;
+      border-bottom: 2px solid #e1e8ed;
+      padding-bottom: 0.5rem;
+    }
+
+    .drawer-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .drawer-item {
+      background: #f8f9fa;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      text-align: center;
+    }
+
+    .drawer-denomination {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .drawer-amount {
+      color: #27ae60;
+      font-weight: 600;
+    }
+
+    .change-breakdown {
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    .change-breakdown h4 {
+      color: #2c3e50;
+      margin-bottom: 0.5rem;
+    }
+
+    .change-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #e1e8ed;
+    }
+
+    .change-denomination {
+      font-weight: 600;
+    }
+
+    .change-amount {
+      color: #e67e22;
+      font-weight: 600;
+    }
+
+    .alert {
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    .alert-warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>💵 Cash Register</h1>
+    
+    <div class="price-display">Price: $<span id="price-display">19.50</span></div>
+    
+    <div class="input-group">
+      <label for="cash">Cash Received</label>
+      <input type="number" id="cash" placeholder="Enter cash amount" step="0.01" min="0" />
+    </div>
+    
+    <button id="purchase-btn">Process Purchase</button>
+    
+    <div id="alert-message" class="alert alert-warning hidden"></div>
+    
+    <div id="change-due"></div>
+    
+    <div class="change-breakdown hidden" id="change-breakdown">
+      <h4>Change Breakdown:</h4>
+      <div id="change-items"></div>
+    </div>
+    
+    <div class="drawer">
+      <h3>Cash Drawer</h3>
+      <div class="drawer-items" id="drawer-items">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Global variables for price and cash in drawer
+    let price = 19.5;
+    let cid = [
+      ["PENNY", 1.01],
+      ["NICKEL", 2.05],
+      ["DIME", 3.1],
+      ["QUARTER", 4.25],
+      ["ONE", 90],
+      ["FIVE", 55],
+      ["TEN", 20],
+      ["TWENTY", 60],
+      ["ONE HUNDRED", 100]
+    ];
+
+    // Currency values in descending order
+    const currencyUnits = [
+      ["ONE HUNDRED", 100],
+      ["TWENTY", 20],
+      ["TEN", 10],
+      ["FIVE", 5],
+      ["ONE", 1],
+      ["QUARTER", 0.25],
+      ["DIME", 0.1],
+      ["NICKEL", 0.05],
+      ["PENNY", 0.01]
+    ];
+
+    // DOM elements
+    const priceDisplay = document.getElementById("price-display");
+    const cashInput = document.getElementById("cash");
+    const purchaseBtn = document.getElementById("purchase-btn");
+    const changeDue = document.getElementById("change-due");
+    const alertMessage = document.getElementById("alert-message");
+    const changeBreakdown = document.getElementById("change-breakdown");
+    const changeItems = document.getElementById("change-items");
+    const drawerItems = document.getElementById("drawer-items");
+
+    // Initialize the app
+    function init() {
+      priceDisplay.textContent = price.toFixed(2);
+      renderDrawer();
+      
+      purchaseBtn.addEventListener("click", handlePurchase);
+      cashInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          handlePurchase();
+        }
+      });
+      
+      // Focus on input when page loads
+      cashInput.focus();
+    }
+
+    // Handle purchase button click
+    function handlePurchase() {
+      hideAlert();
+      hideChangeBreakdown();
+      
+      const cash = parseFloat(cashInput.value);
+      
+      // Validate input
+      if (isNaN(cash) || cash < 0) {
+        showAlert("Please enter a valid cash amount");
+        return;
+      }
+      
+      if (cash < price) {
+        showAlert("Customer does not have enough money to purchase the item");
+        return;
+      }
+      
+      if (cash === price) {
+        changeDue.textContent = "No change due - customer paid with exact cash";
+        changeDue.className = "status-closed";
+        return;
+      }
+
+      const change = getChange(cash - price, JSON.parse(JSON.stringify(cid)));
+      displayResult(change);
+      
+      // Update drawer display
+      renderDrawer();
+    }
+
+    // Calculate change
+    function getChange(changeDue, drawer) {
+      let changeArray = [];
+      let remaining = changeDue;
+      let totalCID = drawer.reduce((sum, curr) => sum + curr[1], 0);
+
+      totalCID = Math.round(totalCID * 100) / 100;
+
+      if (totalCID < remaining) {
+        return { status: "INSUFFICIENT_FUNDS", change: [] };
+      }
+
+      // Create a copy of drawer in the same order as currencyUnits
+      const drawerReversed = [...drawer].reverse();
+
+      for (let i = 0; i < currencyUnits.length; i++) {
+        const [unit, value] = currencyUnits[i];
+        let drawerUnit = drawerReversed[i][1];
+        let amountUsed = 0;
+
+        while (remaining >= value && drawerUnit > 0) {
+          remaining -= value;
+          remaining = Math.round(remaining * 100) / 100;
+          drawerUnit -= value;
+          amountUsed += value;
+        }
+
+        if (amountUsed > 0) {
+          changeArray.push([unit, Math.round(amountUsed * 100) / 100]);
+        }
+      }
+
+      const totalChange = changeArray.reduce((sum, curr) => sum + curr[1], 0);
+      totalCID = Math.round(totalCID * 100) / 100;
+      remaining = Math.round(remaining * 100) / 100;
+
+      if (remaining > 0) {
+        return { status: "INSUFFICIENT_FUNDS", change: [] };
+      } else if (totalChange === totalCID) {
+        return { status: "CLOSED", change: drawer };
+      } else {
+        return { status: "OPEN", change: changeArray };
+      }
+    }
+
+    // Display the result
+    function displayResult(result) {
+      changeDue.textContent = `Status: ${result.status}`;
+      
+      if (result.status === "INSUFFICIENT_FUNDS") {
+        changeDue.className = "status-insufficient";
+      } else if (result.status === "CLOSED") {
+        changeDue.className = "status-closed";
+        // Show change breakdown for CLOSED status
+        showChangeBreakdown(result.change.filter(([_, amt]) => amt > 0));
+      } else if (result.status === "OPEN") {
+        changeDue.className = "status-open";
+        // Show change breakdown for OPEN status
+        showChangeBreakdown(result.change);
+      }
+    }
+
+    // Show change breakdown
+    function showChangeBreakdown(changeArray) {
+      changeBreakdown.classList.remove("hidden");
+      changeItems.innerHTML = "";
+      
+      if (changeArray.length === 0) {
+        changeItems.innerHTML = "<p>No change to give</p>";
+        return;
+      }
+      
+      changeArray.forEach(([unit, amount]) => {
+        const changeItem = document.createElement("div");
+        changeItem.className = "change-item";
+        changeItem.innerHTML = `
+          <span class="change-denomination">${unit}:</span>
+          <span class="change-amount">$${amount.toFixed(2)}</span>
+        `;
+        changeItems.appendChild(changeItem);
+      });
+    }
+
+    // Hide change breakdown
+    function hideChangeBreakdown() {
+      changeBreakdown.classList.add("hidden");
+    }
+
+    // Show alert message
+    function showAlert(message) {
+      alertMessage.textContent = message;
+      alertMessage.classList.remove("hidden");
+    }
+
+    // Hide alert message
+    function hideAlert() {
+      alertMessage.classList.add("hidden");
+    }
+
+    // Render the cash drawer
+    function renderDrawer() {
+      drawerItems.innerHTML = "";
+      
+      cid.forEach(([unit, amount]) => {
+        const drawerItem = document.createElement("div");
+        drawerItem.className = "drawer-item";
+        drawerItem.innerHTML = `
+          <div class="drawer-denomination">${unit}</div>
+          <div class="drawer-amount">$${amount.toFixed(2)}</div>
+        `;
+        drawerItems.appendChild(drawerItem);
+      });
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
