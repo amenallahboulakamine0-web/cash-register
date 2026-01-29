@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Register Algorithm</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+    <h1>Cash Register</h1>
+    
+    <div id="register-container">
+        <div class="input-group">
+            <label>Price: <input type="number" id="price" step="0.01" value="19.5"></label>
+            <label>Cash: <input type="number" id="cash" step="0.01" value="20"></label>
+            <button id="purchase-btn">Calculate Change</button>
+        </div>
+        
+        <div id="display-screen">
+            <p id="status">Status: IDLE</p>
+            <div id="change-due"></div>
+        </div>
+
+        <div id="drawer-display">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
